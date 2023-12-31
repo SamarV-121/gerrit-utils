@@ -2,7 +2,7 @@ from gerrit.api import get_changes_list
 
 
 def review(ssh, args):
-    changes = get_changes_list(ssh, args)
+    changes = get_changes_list(ssh, args, action="review")
 
     if args.abandon:
         review_query = "--abandon"
@@ -18,7 +18,7 @@ def review(ssh, args):
 
 
 def set_topic(ssh, args):
-    changes = get_changes_list(ssh, args)
+    changes = get_changes_list(ssh, args, action="set_topic")
 
     for change in changes:
         print(f"Setting topic for change: {change}")

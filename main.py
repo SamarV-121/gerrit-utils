@@ -30,7 +30,7 @@ def parse_args():
     )
     parser.add_argument("-u", "--user", default=USER, help="Gerrit user")
 
-    subparsers = parser.add_subparsers(title="abilities")
+    subparsers = parser.add_subparsers(title="abilities", dest="subcommand")
 
     # Review
     review_parser = subparsers.add_parser("review", help="Review gerrit changes")
@@ -67,14 +67,11 @@ def main():
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(args.gerrit, port=args.port, username=args.user)
 
-    if (
-        (hasattr(args, "abandon") and args.abandon)
-        or (hasattr(args, "code_review") and args.code_review)
-        or (hasattr(args, "verified") and args.verified)
-    ):
-        actions.review(ssh, args)
-    elif hasattr(args, "topic") and args.topic:
-        actions.set_topic(ssh, args)
+    match args.subcommand:
+        case "review":
+            actions.review(ssh, args)
+        case "topic":
+            actions.set_topic(ssh, args)
 
     ssh.close()
 
