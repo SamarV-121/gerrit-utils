@@ -29,10 +29,26 @@ def review(ssh, args):
         ssh.exec_command(command)
 
 
+def set_reviewers(ssh, args):
+    changes = get_changes_list(ssh, args, action="set_reviewers")
+    reviewers = []
+
+    if args.add:
+        reviewers.append(f"--add {args.add}")
+
+    if args.remove:
+        reviewers.append(f"--remove {args.remove}")
+
+    for change in changes:
+        command = f"gerrit set-reviewers {' '.join(reviewers)} {change}"
+        print(command)
+        ssh.exec_command(command)
+
+
 def set_topic(ssh, args):
     changes = get_changes_list(ssh, args, action="set_topic")
 
     for change in changes:
-        print(f"Setting topic for change: {change}")
         command = f"gerrit set-topic {change} --topic {args.topic}"
+        print(command)
         ssh.exec_command(command)

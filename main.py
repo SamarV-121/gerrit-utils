@@ -70,6 +70,14 @@ def parse_args():
     )
     add_common_args(review_parser)
 
+    # Reviewers
+    reviewer_parser = subparsers.add_parser("set-reviewers", help="Assign reviewers")
+    reviewer_parser.add_argument("-a", "--add", help="Set reviewer to the change")
+    reviewer_parser.add_argument(
+        "-r", "--remove", help="Remove reviewer from the change"
+    )
+    add_common_args(reviewer_parser)
+
     # Topic
     topic_parser = subparsers.add_parser("topic", help="Set topic")
     topic_parser.add_argument("-t", "--topic", help="Set topic")
@@ -90,6 +98,8 @@ def main():
     match args.subcommand:
         case "review":
             actions.review(ssh, args)
+        case "set-reviewers":
+            actions.set_reviewers(ssh, args)
         case "topic":
             actions.set_topic(ssh, args)
 

@@ -33,9 +33,7 @@ def get_trimmed_changes(gerrit_url, change_num1, change_num2):
 def get_changes_list(ssh, args, action):
     gerrit_url = args.gerrit
     if args.change:
-        if action == "set_topic":
-            return args.change
-        elif action == "review":
+        if action == "review":
             changes = []
             # review needs a patchset number as well
             for change in args.change:
@@ -47,18 +45,18 @@ def get_changes_list(ssh, args, action):
                 changes.append(f"{change},{current_patchset}")
 
             return changes
+        return args.change
     elif args.changes:
         change_num1, change_num2 = args.changes
-        if action == "set_topic":
-            return [
-                change["_change_number"]
-                for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
-            ]
-        elif action == "review":
+        if action == "review":
             return [
                 f'{change["_change_number"]},{change["_current_revision_number"]}'
                 for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
             ]
+        return [
+            change["_change_number"]
+            for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
+        ]
     elif args.query:
         changes = []
         command = f"gerrit query {args.query} --current-patch-set --format=JSON"
