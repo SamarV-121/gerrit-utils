@@ -8,6 +8,15 @@ def review(ssh, args):
     if args.abandon:
         review_query.append("--abandon")
 
+    if args.restore:
+        review_query.append("--restore")
+
+    if args.submit:
+        review_query.append("--submit")
+
+    if args.message:
+        review_query.append(f"--message {args.message}")
+
     if args.code_review:
         review_query.append(f"--code-review {args.code_review}")
 
