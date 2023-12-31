@@ -31,15 +31,35 @@ def get_trimmed_changes(gerrit_url, change_num1, change_num2):
 
 
 def get_changes_list(ssh, args):
+    gerrit_url = args.gerrit
     if args.change:
-        return args.change
+        if args.topic:
+            return args.change
+        elif args.review:
+            changes = []
+            # review needs a patchset number as well
+            for change in args.change:
+                change_info = get_change_info(gerrit_url, change)
+
+                for rev_id, rev_data in change_info["revisions"].items():
+                    current_patchset = rev_data["_number"]
+
+                changes.append(f"{change},{current_patchset}")
+
+            return changes
     elif args.changes:
-        return [
-            change["_change_number"]
-            for change in get_trimmed_changes(
-                args.gerrit, args.changes[0], args.changes[1]
-            )
-        ]
+        change_num1, change_num2 = args.changes
+
+        if args.topic:
+            return [
+                change["_change_number"]
+                for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
+            ]
+        elif args.review:
+            return [
+                f'{change["_change_number"]},{change["_current_revision_number"]}'
+                for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
+            ]
     elif args.query:
         changes = []
         command = f"gerrit query {args.query} --current-patch-set --format=JSON"
@@ -49,6 +69,11 @@ def get_changes_list(ssh, args):
             change = json.loads(change_json)
 
             if change.get("number"):
-                changes.append(change["number"])
+                if args.review:
+                    changes.append(
+                        f'{change["number"]},{change["currentPatchSet"]["number"]}'
+                    )
+                else:
+                    changes.append(change["number"])
 
         return changes

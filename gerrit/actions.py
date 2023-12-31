@@ -2,8 +2,19 @@ from gerrit.api import get_changes_list
 
 
 def review(ssh, args):
-    # Stub
-    pass
+    changes = get_changes_list(ssh, args)
+
+    if args.abandon:
+        review_query = "--abandon"
+    elif args.code_review:
+        review_query = f"--code-review {args.code_review}"
+    elif args.verified:
+        review_query = f"--verified {args.verified}"
+
+    for change in changes:
+        print(f"{args.review}: {change}")
+        command = f"gerrit review {review_query} {change}"
+        ssh.exec_command(command)
 
 
 def set_topic(ssh, args):
