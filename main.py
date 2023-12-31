@@ -22,18 +22,6 @@ def add_common_args(parser):
     parser.add_argument("-q", "--query", help="Pass a gerrit query")
 
 
-def validate_args(args):
-    if args.subcommand == "review":
-        if args.abandon and args.restore:
-            raise argparse.ArgumentError(
-                None, "abandon (-a) and restore (-r) cannot be used at the same time"
-            )
-        if args.submit and (args.abandon or args.restore):
-            raise argparse.ArgumentError(
-                None, "abandon (-a) or restore (-r) cannot be used with submit (-s)"
-            )
-
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--gerrit", default=GERRIT, help="Gerrit server URL")
@@ -46,13 +34,14 @@ def parse_args():
 
     # Review
     review_parser = subparsers.add_parser("review", help="Review gerrit changes")
-    review_parser.add_argument(
+    review_group = review_parser.add_mutually_exclusive_group()
+    review_group.add_argument(
         "-a", "--abandon", action="store_true", help="Abandon the change"
     )
-    review_parser.add_argument(
+    review_group.add_argument(
         "-r", "--restore", action="store_true", help="Restore the change"
     )
-    review_parser.add_argument(
+    review_group.add_argument(
         "-s", "--submit", action="store_true", help="Submit the change"
     )
     review_parser.add_argument("-m", "--message", help="Post a message on the change")
@@ -88,7 +77,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-    validate_args(args)
 
     # SSH connect
     ssh = paramiko.SSHClient()
