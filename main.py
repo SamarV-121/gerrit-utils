@@ -10,6 +10,11 @@ USER = "SamarV-121"
 
 
 def add_common_args(parser):
+    parser.add_argument("-g", "--gerrit", default=GERRIT, help="Gerrit server URL")
+    parser.add_argument(
+        "-p", "--port", default=PORT, type=int, help="Gerrit server port number"
+    )
+    parser.add_argument("-u", "--user", default=USER, help="Gerrit user")
     parser.add_argument("-c", "--change", type=int, nargs="+", help="Change number(s)")
     parser.add_argument(
         "-cc",
@@ -24,16 +29,50 @@ def add_common_args(parser):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-g", "--gerrit", default=GERRIT, help="Gerrit server URL")
-    parser.add_argument(
-        "-p", "--port", default=PORT, type=int, help="Gerrit server port number"
-    )
-    parser.add_argument("-u", "--user", default=USER, help="Gerrit user")
-
     subparsers = parser.add_subparsers(title="abilities", dest="subcommand")
+
+    # Push
+    push_parser = subparsers.add_parser("push", help="Push changes to gerrit")
+    push_parser.add_argument("--path", default=".", help="Push changes")
+    push_parser.add_argument("-b", "--branch", help="Specify the branch name")
+    push_parser.add_argument("-c", "--commit", help="Commit hash id")
+    push_parser.add_argument("-r", "--remote", help="Specify the remote")
+    push_parser.add_argument("--ref", help="Specify the ref type")
+    push_parser.add_argument(
+        "-cr",
+        "--code-review",
+        choices={"-2", "-1", "0", "+1", "+2"},
+        help="Code review",
+    )
+    push_parser.add_argument(
+        "-v",
+        "--verified",
+        choices={"-1", "0", "+1"},
+        help="Verify the change",
+    )
+    push_parser.add_argument("-t", "--topic", help="Set a topic")
+    push_parser.add_argument("-m", "--merge", help="Push a merge on gerrit")
+    private_group = push_parser.add_mutually_exclusive_group()
+    wip_group = push_parser.add_mutually_exclusive_group()
+
+    private_group.add_argument(
+        "--private",
+        action="store_true",
+        help="Set private visibility to the change",
+    )
+    private_group.add_argument(
+        "--remove_private",
+        action="store_true",
+        help="Set public visibility to the change",
+    )
+    wip_group.add_argument("--wip", action="store_true", help="Mark change as wip")
+    wip_group.add_argument(
+        "--ready", action="store_true", help="Mark change ready for reviewing"
+    )
 
     # Review
     review_parser = subparsers.add_parser("review", help="Review gerrit changes")
+    add_common_args(review_parser)
     review_group = review_parser.add_mutually_exclusive_group()
     review_group.add_argument(
         "-a", "--abandon", action="store_true", help="Abandon the change"
@@ -57,20 +96,19 @@ def parse_args():
         choices={"-1", "0", "+1"},
         help="Verify the change",
     )
-    add_common_args(review_parser)
 
     # Reviewers
     reviewer_parser = subparsers.add_parser("set-reviewers", help="Assign reviewers")
+    add_common_args(reviewer_parser)
     reviewer_parser.add_argument("-a", "--add", help="Set reviewer to the change")
     reviewer_parser.add_argument(
         "-r", "--remove", help="Remove reviewer from the change"
     )
-    add_common_args(reviewer_parser)
 
     # Topic
     topic_parser = subparsers.add_parser("topic", help="Set topic")
-    topic_parser.add_argument("-t", "--topic", help="Set topic")
     add_common_args(topic_parser)
+    topic_parser.add_argument("-t", "--topic", help="Set topic")
 
     return parser.parse_args(args=None if sys.argv[1:] else ["-h"])
 
@@ -84,6 +122,8 @@ def main():
     ssh.connect(args.gerrit, port=args.port, username=args.user)
 
     match args.subcommand:
+        case "push":
+            actions.push(args)
         case "review":
             actions.review(ssh, args)
         case "set-reviewers":

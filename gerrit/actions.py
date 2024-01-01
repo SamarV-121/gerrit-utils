@@ -1,4 +1,47 @@
 from gerrit.api import get_changes_list
+from git import Repo
+
+
+def push(args):
+    repo = Repo(args.path)
+    refspec = []
+
+    remote = args.remote or repo.remote().name
+    branch = args.branch or repo.active_branch.name
+    ref = args.ref or "for"
+    commit = args.commit or "HEAD"
+
+    def add_refspec(spec):
+        sep = "%" if len(refspec) == 0 else ","
+        refspec.append(f"{sep}{spec}")
+
+    if args.code_review:
+        add_refspec(f"l=Code-Review{args.code_review}")
+
+    if args.verified:
+        add_refspec(f"l=Verified{args.verified}")
+
+    if args.topic:
+        add_refspec(f"topic={args.topic}")
+
+    if args.private:
+        add_refspec("private")
+
+    if args.remove_private:
+        add_refspec("remove-private")
+
+    if args.wip:
+        add_refspec("wip")
+
+    if args.ready:
+        add_refspec("ready")
+
+    if args.merge:
+        commit_info = repo.git.show(args.merge, "--pretty=%P").split()
+        base_args = f"base={commit_info[0]},base={commit_info[1]}"
+        add_refspec("".join(base_args))
+
+    repo.git.push(remote, f'{commit}:refs/{ref}/{branch}{"".join(refspec)}')
 
 
 def review(ssh, args):
