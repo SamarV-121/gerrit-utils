@@ -1,5 +1,5 @@
-from gerrit.api import get_changes_list
 from git import Repo
+from gerrit.api import get_changes_list
 
 
 def push(args):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
-import paramiko
 import sys
+import paramiko
 from gerrit import actions
 
 GERRIT = "review.leafos.org"
