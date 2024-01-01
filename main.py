@@ -9,6 +9,23 @@ PORT = "29418"
 USER = "SamarV-121"
 
 
+def ssh_connection_required(exclude):
+    def decorator(func):
+        def wrapper(parsed_args, ssh):
+            if parsed_args.subcommand in exclude:
+                func(parsed_args, None)
+            else:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(parsed_args.gerrit, parsed_args.port, parsed_args.user)
+                func(parsed_args, ssh)
+                ssh.close()
+
+        return wrapper
+
+    return decorator
+
+
 def add_common_args(parser):
     parser.add_argument("-g", "--gerrit", default=GERRIT, help="Gerrit server URL")
     parser.add_argument(
@@ -113,26 +130,19 @@ def parse_args():
     return parser.parse_args(args=None if sys.argv[1:] else ["-h"])
 
 
-def main():
-    args = parse_args()
-
-    # SSH connect
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(args.gerrit, port=args.port, username=args.user)
-
-    match args.subcommand:
+@ssh_connection_required(exclude="push")
+def main(parsed_args, ssh):
+    match parsed_args.subcommand:
         case "push":
-            actions.push(args)
+            actions.push(parsed_args)
         case "review":
-            actions.review(ssh, args)
+            actions.review(ssh, parsed_args)
         case "set-reviewers":
-            actions.set_reviewers(ssh, args)
+            actions.set_reviewers(ssh, parsed_args)
         case "topic":
-            actions.set_topic(ssh, args)
-
-    ssh.close()
+            actions.set_topic(ssh, parsed_args)
 
 
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    main(args, None)
