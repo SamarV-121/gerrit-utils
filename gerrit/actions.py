@@ -41,7 +41,14 @@ def push(args):
         base_args = f"base={commit_info[0]},base={commit_info[1]}"
         add_refspec("".join(base_args))
 
-    repo.git.push(remote, f'{commit}:refs/{ref}/{branch}{"".join(refspec)}')
+    command = [remote, f'{commit}:refs/{ref}/{branch}{"".join(refspec)}']
+
+    if args.thin:
+        command.append("--no-thin")
+
+    print(f"Running git push {command}")
+
+    repo.git.push(command)
 
 
 def review(ssh, args):

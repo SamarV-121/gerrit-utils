@@ -69,6 +69,13 @@ def parse_args():
     )
     push_parser.add_argument("-t", "--topic", help="Set a topic")
     push_parser.add_argument("-m", "--merge", help="Push a merge on gerrit")
+    push_parser.add_argument(
+        "-n",
+        "--no-thin",
+        dest="thin",
+        action="store_true",
+        help="Disable thin optimizations while pushing",
+    )
     private_group = push_parser.add_mutually_exclusive_group()
     wip_group = push_parser.add_mutually_exclusive_group()
 
