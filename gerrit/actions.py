@@ -52,6 +52,9 @@ def push(args):
     if args.thin:
         command.append("--no-thin")
 
+    if ref == "heads":
+        command.append("-o skip-validation")
+
     print(f"Running git push {command}")
 
     repo.git.push(command)
