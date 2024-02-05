@@ -24,6 +24,12 @@ def push(args):
     if args.topic:
         add_refspec(f"topic={args.topic}")
 
+    if args.reviewer:
+        add_refspec(f"r={args.reviewer}")
+
+    if args.cc:
+        add_refspec(f"cc={args.cc}")
+
     if args.private:
         add_refspec("private")
 

@@ -34,7 +34,6 @@ def add_common_args(parser):
     parser.add_argument("-u", "--user", default=USER, help="Gerrit user")
     parser.add_argument("-c", "--change", type=int, nargs="+", help="Change number(s)")
     parser.add_argument(
-        "-cc",
         "--changes",
         type=int,
         nargs=2,
@@ -76,9 +75,9 @@ def parse_args():
         action="store_true",
         help="Disable thin optimizations while pushing",
     )
+    push_parser.add_argument("--reviewer", help="Assign a reviewer")
+    push_parser.add_argument("--cc", help="CC additional recipients")
     private_group = push_parser.add_mutually_exclusive_group()
-    wip_group = push_parser.add_mutually_exclusive_group()
-
     private_group.add_argument(
         "--private",
         action="store_true",
@@ -89,6 +88,7 @@ def parse_args():
         action="store_true",
         help="Set public visibility to the change",
     )
+    wip_group = push_parser.add_mutually_exclusive_group()
     wip_group.add_argument("--wip", action="store_true", help="Mark change as wip")
     wip_group.add_argument(
         "--ready", action="store_true", help="Mark change ready for reviewing"
