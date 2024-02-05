@@ -65,9 +65,14 @@ def get_changes_list(ssh, args, action):
             change["_change_number"]
             for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
         ]
-    elif args.query:
+    elif args.query or args.topic:
         changes = []
-        command = f"gerrit query {args.query} --current-patch-set --format=JSON"
+        query = args.query
+
+        if args.topic:
+            query = f"topic:{args.topic}"
+
+        command = f"gerrit query {query} --current-patch-set --format=JSON"
         _, stdout, _ = ssh.exec_command(command)
 
         for change_json in stdout:

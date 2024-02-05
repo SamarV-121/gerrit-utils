@@ -97,6 +97,7 @@ def parse_args():
     # Review
     review_parser = subparsers.add_parser("review", help="Review gerrit changes")
     add_common_args(review_parser)
+    review_parser.add_argument("-t", "--topic", help="Review a whole topic")
     review_group = review_parser.add_mutually_exclusive_group()
     review_group.add_argument(
         "-a", "--abandon", action="store_true", help="Abandon the change"
