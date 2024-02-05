@@ -26,21 +26,26 @@ def ssh_connection_required(exclude):
     return decorator
 
 
-def add_common_args(parser):
+def add_common_args(parser, ops=None):
     parser.add_argument("-g", "--gerrit", default=GERRIT, help="Gerrit server URL")
     parser.add_argument(
         "-p", "--port", default=PORT, type=int, help="Gerrit server port number"
     )
     parser.add_argument("-u", "--user", default=USER, help="Gerrit user")
-    parser.add_argument("-c", "--change", type=int, nargs="+", help="Change number(s)")
-    parser.add_argument(
+    mutex_group = parser.add_mutually_exclusive_group()
+    mutex_group.add_argument(
+        "-c", "--change", type=int, nargs="+", help="Change number(s)"
+    )
+    mutex_group.add_argument(
         "--changes",
         type=int,
         nargs=2,
         metavar=("CHANGE1", "CHANGE2"),
         help="Specify range of changes",
     )
-    parser.add_argument("-q", "--query", help="Pass a gerrit query")
+    mutex_group.add_argument("-q", "--query", help="Pass a gerrit query")
+    if ops != "topic":
+        mutex_group.add_argument("-t", "--topic", help="Pass a topic name")
 
 
 def parse_args():
@@ -97,7 +102,6 @@ def parse_args():
     # Review
     review_parser = subparsers.add_parser("review", help="Review gerrit changes")
     add_common_args(review_parser)
-    review_parser.add_argument("-t", "--topic", help="Review a whole topic")
     review_group = review_parser.add_mutually_exclusive_group()
     review_group.add_argument(
         "-a", "--abandon", action="store_true", help="Abandon the change"
@@ -132,7 +136,7 @@ def parse_args():
 
     # Topic
     topic_parser = subparsers.add_parser("topic", help="Set topic")
-    add_common_args(topic_parser)
+    add_common_args(topic_parser, ops="topic")
     topic_parser.add_argument("-t", "--topic", help="Set topic")
 
     return parser.parse_args(args=None if sys.argv[1:] else ["-h"])
