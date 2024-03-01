@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
+#
+# Copyright (C) 2023-2024, Samar Vispute "SamarV-121" <samar@samarv121.dev>
+#
+# SPDX-License-Identifier: MIT
+#
 import argparse
+import os
 import sys
 import paramiko
 from gerrit import actions
 
-GERRIT = "review.leafos.org"
+GERRIT = os.environ.get("GERRIT_SERVER")
+USER = os.environ.get("GERRIT_USERNAME")
 PORT = "29418"
-USER = "SamarV-121"
 
 
 def ssh_connection_required(exclude):
@@ -26,39 +32,71 @@ def ssh_connection_required(exclude):
     return decorator
 
 
+def formatter(prog):
+    return argparse.HelpFormatter(prog, max_help_position=52)
+
+
 def add_common_args(parser, ops=None):
-    parser.add_argument("-g", "--gerrit", default=GERRIT, help="Gerrit server URL")
     parser.add_argument(
-        "-p", "--port", default=PORT, type=int, help="Gerrit server port number"
+        "-g",
+        "--gerrit",
+        default=GERRIT,
+        help="Specify the Gerrit server URL (default: %(default)s)",
+        required=GERRIT is None,
     )
-    parser.add_argument("-u", "--user", default=USER, help="Gerrit user")
-    mutex_group = parser.add_mutually_exclusive_group()
-    mutex_group.add_argument(
-        "-c", "--change", type=int, nargs="+", help="Change number(s)"
+    parser.add_argument(
+        "-p",
+        "--port",
+        default=PORT,
+        type=int,
+        help="Specify the Gerrit server port number (default: %(default)s)",
     )
-    mutex_group.add_argument(
-        "--changes",
+    parser.add_argument(
+        "-u",
+        "--user",
+        default=USER,
+        help="Specify the Gerrit user (default: %(default)s)",
+        required=USER is None,
+    )
+    common_group = parser.add_mutually_exclusive_group(required=True)
+    common_group.add_argument(
+        "-c", "--change", type=int, nargs="+", help="Specify the change number(s)"
+    )
+    common_group.add_argument(
+        "--range",
         type=int,
         nargs=2,
         metavar=("CHANGE1", "CHANGE2"),
-        help="Specify range of changes",
+        help="Specify a range of changes",
     )
-    mutex_group.add_argument("-q", "--query", help="Pass a gerrit query")
+    common_group.add_argument("-q", "--query", help="Specify a Gerrit query")
     if ops != "topic":
-        mutex_group.add_argument("-t", "--topic", help="Pass a topic name")
+        common_group.add_argument("-t", "--topic", help="Specify a topic name")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=formatter)
     subparsers = parser.add_subparsers(title="abilities", dest="subcommand")
 
     # Push
-    push_parser = subparsers.add_parser("push", help="Push changes to gerrit")
-    push_parser.add_argument("--path", default=".", help="Push changes")
+    push_parser = subparsers.add_parser(
+        "push", help="Push changes to Gerrit", formatter_class=formatter
+    )
+    push_parser.add_argument(
+        "--path",
+        default=".",
+        help="Specify the local path of repo",
+    )
     push_parser.add_argument("-b", "--branch", help="Specify the branch name")
-    push_parser.add_argument("-c", "--commit", help="Commit hash id")
-    push_parser.add_argument("-r", "--remote", help="Specify the remote")
+    push_parser.add_argument("-c", "--commit", help="Specify the commit hash id")
+    push_parser.add_argument(
+        "-r",
+        "--remote",
+        default="gerrit",
+        help="Specify the remote (default: %(default)s)",
+    )
     push_parser.add_argument("--ref", help="Specify the ref type")
+    push_parser.add_argument("-t", "--topic", help="Specify a topic")
     push_parser.add_argument(
         "-cr",
         "--code-review",
@@ -71,8 +109,9 @@ def parse_args():
         choices={"-1", "0", "+1"},
         help="Verify the change",
     )
-    push_parser.add_argument("-t", "--topic", help="Set a topic")
-    push_parser.add_argument("-m", "--merge", help="Push a merge on gerrit")
+    push_parser.add_argument(
+        "-m", "--merge", help="Push a merge on Gerrit", metavar="MERGE_COMMIT"
+    )
     push_parser.add_argument(
         "-n",
         "--no-thin",
@@ -86,21 +125,25 @@ def parse_args():
     private_group.add_argument(
         "--private",
         action="store_true",
-        help="Set private visibility to the change",
+        help="Set the change visibility to private",
     )
     private_group.add_argument(
-        "--remove_private",
+        "--remove-private",
         action="store_true",
-        help="Set public visibility to the change",
+        help="Set the change visibility to public",
     )
     wip_group = push_parser.add_mutually_exclusive_group()
-    wip_group.add_argument("--wip", action="store_true", help="Mark change as wip")
     wip_group.add_argument(
-        "--ready", action="store_true", help="Mark change ready for reviewing"
+        "--wip", action="store_true", help="Mark the change as work in progress"
+    )
+    wip_group.add_argument(
+        "--ready", action="store_true", help="Mark the change as ready for reviewing"
     )
 
     # Review
-    review_parser = subparsers.add_parser("review", help="Review gerrit changes")
+    review_parser = subparsers.add_parser(
+        "review", help="Review gerrit changes", formatter_class=formatter
+    )
     add_common_args(review_parser)
     review_group = review_parser.add_mutually_exclusive_group()
     review_group.add_argument(
@@ -127,15 +170,19 @@ def parse_args():
     )
 
     # Reviewers
-    reviewer_parser = subparsers.add_parser("set-reviewers", help="Assign reviewers")
+    reviewer_parser = subparsers.add_parser(
+        "set-reviewers", help="Assign reviewers", formatter_class=formatter
+    )
     add_common_args(reviewer_parser)
-    reviewer_parser.add_argument("-a", "--add", help="Set reviewer to the change")
+    reviewer_parser.add_argument("-a", "--add", help="Add reviewer to the change")
     reviewer_parser.add_argument(
         "-r", "--remove", help="Remove reviewer from the change"
     )
 
     # Topic
-    topic_parser = subparsers.add_parser("topic", help="Set topic")
+    topic_parser = subparsers.add_parser(
+        "topic", help="Set topic", formatter_class=formatter
+    )
     add_common_args(topic_parser, ops="topic")
     topic_parser.add_argument("-t", "--topic", help="Set topic")
 

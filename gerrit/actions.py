@@ -1,3 +1,8 @@
+#
+# Copyright (C) 2023-2024, Samar Vispute "SamarV-121" <samar@samarv121.dev>
+#
+# SPDX-License-Identifier: MIT
+#
 from git import Repo
 from gerrit.api import get_changes_list
 

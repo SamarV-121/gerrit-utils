@@ -1,3 +1,8 @@
+#
+# Copyright (C) 2023-2024, Samar Vispute "SamarV-121" <samar@samarv121.dev>
+#
+# SPDX-License-Identifier: MIT
+#
 import json
 import requests
 
@@ -54,8 +59,8 @@ def get_changes_list(ssh, args, action):
 
             return changes
         return args.change
-    elif args.changes:
-        change_num1, change_num2 = args.changes
+    elif args.range:
+        change_num1, change_num2 = args.range
         if action == "review":
             return [
                 f'{change["_change_number"]},{change["_current_revision_number"]}'
