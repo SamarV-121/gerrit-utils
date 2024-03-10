@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 #
 from git import Repo
-from gerrit.api import get_changes_list
+from gerrit.utils.api import get_changes_list
 
 
 def push(args):

@@ -8,7 +8,7 @@ import argparse
 import os
 import sys
 import paramiko
-from gerrit import actions
+from gerrit.utils import actions
 
 GERRIT = os.environ.get("GERRIT_SERVER")
 USER = os.environ.get("GERRIT_USERNAME")
