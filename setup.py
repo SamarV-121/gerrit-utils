@@ -17,7 +17,7 @@ setup(
     long_description_content_type="text/markdown",
     author="SamarV-121",
     author_email="samar@samarv121.dev",
-    python_requires=">=3.10",
+    python_requires=">=3.8",
     install_requires=required_packages,
     url="https://github.com/SamarV-121/gerrit-utils",
     packages=["gerrit", "gerrit.utils"],

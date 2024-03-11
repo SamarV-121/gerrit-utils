@@ -191,15 +191,14 @@ def parse_args():
 
 @ssh_connection_required(exclude="push")
 def main(parsed_args, ssh):
-    match parsed_args.subcommand:
-        case "push":
-            actions.push(parsed_args)
-        case "review":
-            actions.review(ssh, parsed_args)
-        case "set-reviewers":
-            actions.set_reviewers(ssh, parsed_args)
-        case "topic":
-            actions.set_topic(ssh, parsed_args)
+    if parsed_args.subcommand == "push":
+        actions.push(parsed_args)
+    elif parsed_args.subcommand == "review":
+        actions.review(ssh, parsed_args)
+    elif parsed_args.subcommand == "set-reviewers":
+        actions.set_reviewers(ssh, parsed_args)
+    elif parsed_args.subcommand == "topic":
+        actions.set_topic(ssh, parsed_args)
 
 
 if __name__ == "__main__":
