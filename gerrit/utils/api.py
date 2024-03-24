@@ -88,9 +88,7 @@ def get_changes_list(ssh, args, action):
             else:
                 final_query.append(q)
 
-        command = (
-            f"gerrit query {' '.join(final_query)} --current-patch-set --format=JSON"
-        )
+        command = f"gerrit query {' '.join(final_query)} --current-patch-set --format=JSON --no-limit"
         if not args.quiet:
             print(command)
 
