@@ -72,17 +72,37 @@ def get_changes_list(ssh, args, action):
         ]
     elif args.query or args.topic:
         changes = []
+        skip_changes = []
         query = args.query
+        final_query = []
 
         if hasattr(args, "topic") and args.topic:
             query = f"topic:{args.topic}"
 
-        command = f"gerrit query {query} --current-patch-set --format=JSON"
+        for q in query.split():
+            if q.startswith("-"):
+                if "topic:" in q:
+                    skip_changes.append(q[1:].split(":")[1].strip("'\""))
+                else:
+                    skip_changes.append(q[1:])
+            else:
+                final_query.append(q)
+
+        command = (
+            f"gerrit query {' '.join(final_query)} --current-patch-set --format=JSON"
+        )
+
         print(command)
         _, stdout, _ = ssh.exec_command(command)
 
         for change_json in stdout:
             change = json.loads(change_json)
+            if (
+                change.get("topic") in skip_changes
+                or str(change.get("number")) in skip_changes
+            ):
+                print(f"Skipping {change['subject']}")
+                continue
             if change.get("number"):
                 if action == "review":
                     changes.append(

@@ -69,7 +69,11 @@ def add_common_args(parser, ops=None):
         metavar=("CHANGE1", "CHANGE2"),
         help="Specify a range of changes",
     )
-    common_group.add_argument("-q", "--query", help="Specify a Gerrit query")
+    common_group.add_argument(
+        "-q",
+        "--query",
+        help='Specify a Gerrit query (Initialize with "-" to exclude changes eg. -topic:foo -420)',
+    )
     if ops != "topic":
         common_group.add_argument("-t", "--topic", help="Specify a topic name")
 

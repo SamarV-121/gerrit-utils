@@ -65,7 +65,7 @@ options:
   -u USER, --user USER                                  Specify the Gerrit user (default: None)
   -c CHANGE [CHANGE ...], --change CHANGE [CHANGE ...]  Specify the change number(s)
   --range CHANGE1 CHANGE2                               Specify a range of changes
-  -q QUERY, --query QUERY                               Specify a Gerrit query
+  -q QUERY, --query QUERY                               Specify a Gerrit query (Initialize with "-" to exclude changes eg. -topic:foo -420)
   -t TOPIC, --topic TOPIC                               Specify a topic name
   -a, --abandon                                         Abandon the change
   -r, --restore                                         Restore the change
@@ -87,7 +87,7 @@ options:
   -u USER, --user USER                                  Specify the Gerrit user (default: None)
   -c CHANGE [CHANGE ...], --change CHANGE [CHANGE ...]  Specify the change number(s)
   --range CHANGE1 CHANGE2                               Specify a range of changes
-  -q QUERY, --query QUERY                               Specify a Gerrit query
+  -q QUERY, --query QUERY                               Specify a Gerrit query (Initialize with "-" to exclude changes eg. -topic:foo -420)
   -t TOPIC, --topic TOPIC                               Specify a topic name
   -a ADD, --add ADD                                     Add reviewer to the change
   -r REMOVE, --remove REMOVE                            Remove reviewer from the change
@@ -105,7 +105,7 @@ options:
   -u USER, --user USER                                  Specify the Gerrit user (default: None)
   -c CHANGE [CHANGE ...], --change CHANGE [CHANGE ...]  Specify the change number(s)
   --range CHANGE1 CHANGE2                               Specify a range of changes
-  -q QUERY, --query QUERY                               Specify a Gerrit query
+  -q QUERY, --query QUERY                               Specify a Gerrit query (Initialize with "-" to exclude changes eg. -topic:foo -420)
   -t TOPIC, --topic TOPIC                               Set topic
 ```
 
