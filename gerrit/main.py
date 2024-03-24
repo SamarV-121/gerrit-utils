@@ -184,7 +184,7 @@ def parse_args():
         "topic", help="Set topic", formatter_class=formatter
     )
     add_common_args(topic_parser, ops="topic")
-    topic_parser.add_argument("-t", "--topic", help="Set topic")
+    topic_parser.add_argument("-t", "--topic", dest="topic_name", help="Set topic")
 
     return parser.parse_args(args=None if sys.argv[1:] else ["-h"])
 

@@ -74,15 +74,15 @@ def get_changes_list(ssh, args, action):
         changes = []
         query = args.query
 
-        if args.topic:
+        if hasattr(args, "topic") and args.topic:
             query = f"topic:{args.topic}"
 
         command = f"gerrit query {query} --current-patch-set --format=JSON"
+        print(command)
         _, stdout, _ = ssh.exec_command(command)
 
         for change_json in stdout:
             change = json.loads(change_json)
-
             if change.get("number"):
                 if action == "review":
                     changes.append(

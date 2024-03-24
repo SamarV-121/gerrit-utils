@@ -113,6 +113,6 @@ def set_topic(ssh, args):
     changes = get_changes_list(ssh, args, action="set_topic")
 
     for change in changes:
-        command = f"gerrit set-topic {change} --topic {args.topic}"
+        command = f"gerrit set-topic {change} --topic {args.topic_name}"
         print(command)
         ssh.exec_command(command)
