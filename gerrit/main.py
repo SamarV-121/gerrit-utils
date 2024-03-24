@@ -38,6 +38,9 @@ def formatter(prog):
 
 def add_common_args(parser, ops=None):
     parser.add_argument(
+        "--quiet", action="store_true", default=False, help="Silence the output"
+    )
+    parser.add_argument(
         "-g",
         "--gerrit",
         default=GERRIT,
@@ -85,6 +88,9 @@ def parse_args():
     # Push
     push_parser = subparsers.add_parser(
         "push", help="Push changes to Gerrit", formatter_class=formatter
+    )
+    push_parser.add_argument(
+        "--quiet", action="store_true", default=False, help="Silence the output"
     )
     push_parser.add_argument(
         "--path",

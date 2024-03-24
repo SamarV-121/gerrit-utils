@@ -91,8 +91,9 @@ def get_changes_list(ssh, args, action):
         command = (
             f"gerrit query {' '.join(final_query)} --current-patch-set --format=JSON"
         )
+        if not args.quiet:
+            print(command)
 
-        print(command)
         _, stdout, _ = ssh.exec_command(command)
 
         for change_json in stdout:
@@ -101,7 +102,8 @@ def get_changes_list(ssh, args, action):
                 change.get("topic") in skip_changes
                 or str(change.get("number")) in skip_changes
             ):
-                print(f"Skipping {change['subject']}")
+                if not args.quiet:
+                    print(f"Skipping {change['subject']}")
                 continue
             if change.get("number"):
                 if action == "review":

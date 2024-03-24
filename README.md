@@ -34,6 +34,7 @@ usage: gerrit-utils push [-h] [--path PATH] [-b BRANCH] [-c COMMIT] [-r REMOTE] 
 
 options:
   -h, --help                                          show this help message and exit
+  --quiet                                             Silence the output
   --path PATH                                         Specify the local path of repo
   -b BRANCH, --branch BRANCH                          Specify the branch name
   -c COMMIT, --commit COMMIT                          Specify the commit hash id
@@ -60,6 +61,7 @@ usage: gerrit-utils review [-h] [-g GERRIT] [-p PORT] [-u USER] (-c CHANGE [CHAN
 
 options:
   -h, --help                                            show this help message and exit
+  --quiet                                               Silence the output
   -g GERRIT, --gerrit GERRIT                            Specify the Gerrit server URL (default: None)
   -p PORT, --port PORT                                  Specify the Gerrit server port number (default: 29418)
   -u USER, --user USER                                  Specify the Gerrit user (default: None)
@@ -82,6 +84,7 @@ usage: gerrit-utils set-reviewers [-h] -g GERRIT [-p PORT] -u USER (-c CHANGE [C
 
 options:
   -h, --help                                            show this help message and exit
+  --quiet                                               Silence the output
   -g GERRIT, --gerrit GERRIT                            Specify the Gerrit server URL (default: None)
   -p PORT, --port PORT                                  Specify the Gerrit server port number (default: 29418)
   -u USER, --user USER                                  Specify the Gerrit user (default: None)
@@ -100,6 +103,7 @@ usage: gerrit-utils topic [-h] -g GERRIT [-p PORT] -u USER (-c CHANGE [CHANGE ..
 
 options:
   -h, --help                                            show this help message and exit
+  --quiet                                               Silence the output
   -g GERRIT, --gerrit GERRIT                            Specify the Gerrit server URL (default: None)
   -p PORT, --port PORT                                  Specify the Gerrit server port number (default: 29418)
   -u USER, --user USER                                  Specify the Gerrit user (default: None)

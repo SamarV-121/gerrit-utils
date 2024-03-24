@@ -60,7 +60,8 @@ def push(args):
     if ref == "heads":
         command.append("-o skip-validation")
 
-    print(f"Running git push {command}")
+    if not args.quiet:
+        print(f"Running git push {command}")
 
     repo.git.push(command)
 
@@ -89,7 +90,8 @@ def review(ssh, args):
 
     for change in changes:
         command = f"gerrit review {' '.join(review_query)} {change}"
-        print(command)
+        if not args.quiet:
+            print(command)
         ssh.exec_command(command)
 
 
@@ -105,7 +107,8 @@ def set_reviewers(ssh, args):
 
     for change in changes:
         command = f"gerrit set-reviewers {' '.join(reviewers)} {change}"
-        print(command)
+        if not args.quiet:
+            print(command)
         ssh.exec_command(command)
 
 
@@ -114,5 +117,6 @@ def set_topic(ssh, args):
 
     for change in changes:
         command = f"gerrit set-topic {change} --topic {args.topic_name}"
-        print(command)
+        if not args.quiet:
+            print(command)
         ssh.exec_command(command)
