@@ -15,7 +15,9 @@ def ssh_exec(ssh, args, action, query):
         command = f"gerrit {action} {query} {change}"
         if not args.quiet:
             print(command)
-        ssh.exec_command(command)
+        _, _, stderr = ssh.exec_command(command)
+        if err := stderr.read().decode("utf-8"):
+            print(err)
         if idx < len(changes) - 1:
             time.sleep(args.timeout)
 
