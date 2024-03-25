@@ -3,8 +3,21 @@
 #
 # SPDX-License-Identifier: MIT
 #
+import time
 from git import Repo
 from gerrit.utils.api import get_changes_list
+
+
+def ssh_exec(ssh, args, action, query):
+    changes = get_changes_list(ssh, args, action)
+
+    for idx, change in enumerate(changes):
+        command = f"gerrit {action} {query} {change}"
+        if not args.quiet:
+            print(command)
+        ssh.exec_command(command)
+        if idx < len(changes) - 1:
+            time.sleep(args.timeout)
 
 
 def push(args):
@@ -67,7 +80,6 @@ def push(args):
 
 
 def review(ssh, args):
-    changes = get_changes_list(ssh, args, action="review")
     review_query = []
 
     if args.abandon:
@@ -88,15 +100,11 @@ def review(ssh, args):
     if args.verified:
         review_query.append(f"--verified {args.verified}")
 
-    for change in changes:
-        command = f"gerrit review {' '.join(review_query)} {change}"
-        if not args.quiet:
-            print(command)
-        ssh.exec_command(command)
+    final_query = " ".join(review_query)
+    ssh_exec(ssh, args, action="review", query=final_query)
 
 
 def set_reviewers(ssh, args):
-    changes = get_changes_list(ssh, args, action="set_reviewers")
     reviewers = []
 
     if args.add:
@@ -105,18 +113,10 @@ def set_reviewers(ssh, args):
     if args.remove:
         reviewers.append(f"--remove {args.remove}")
 
-    for change in changes:
-        command = f"gerrit set-reviewers {' '.join(reviewers)} {change}"
-        if not args.quiet:
-            print(command)
-        ssh.exec_command(command)
+    final_query = " ".join(reviewers)
+    ssh_exec(ssh, args, action="set-reviewers", query=final_query)
 
 
 def set_topic(ssh, args):
-    changes = get_changes_list(ssh, args, action="set_topic")
-
-    for change in changes:
-        command = f"gerrit set-topic {change} --topic {args.topic_name}"
-        if not args.quiet:
-            print(command)
-        ssh.exec_command(command)
+    final_query = f"--topic {args.topic_name}"
+    ssh_exec(ssh, args, action="set-topic", query=final_query)

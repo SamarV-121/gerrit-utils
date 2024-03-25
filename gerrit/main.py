@@ -79,6 +79,12 @@ def add_common_args(parser, ops=None):
     )
     if ops != "topic":
         common_group.add_argument("-t", "--topic", help="Specify a topic name")
+    parser.add_argument(
+        "--timeout",
+        default=0,
+        type=int,
+        help="Specify the time interval (in seconds) between SSH commands (default: %(default)s)",
+    )
 
 
 def parse_args():

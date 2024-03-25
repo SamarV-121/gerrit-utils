@@ -69,6 +69,7 @@ options:
   --range CHANGE1 CHANGE2                               Specify a range of changes
   -q QUERY, --query QUERY                               Specify a Gerrit query (Initialize with "-" to exclude changes eg. -topic:foo -420)
   -t TOPIC, --topic TOPIC                               Specify a topic name
+  --timeout TIMEOUT                                     Specify the time interval (in seconds) between SSH commands (default: 0)
   -a, --abandon                                         Abandon the change
   -r, --restore                                         Restore the change
   -s, --submit                                          Submit the change
@@ -92,6 +93,7 @@ options:
   --range CHANGE1 CHANGE2                               Specify a range of changes
   -q QUERY, --query QUERY                               Specify a Gerrit query (Initialize with "-" to exclude changes eg. -topic:foo -420)
   -t TOPIC, --topic TOPIC                               Specify a topic name
+  --timeout TIMEOUT                                     Specify the time interval (in seconds) between SSH commands (default: 0)
   -a ADD, --add ADD                                     Add reviewer to the change
   -r REMOVE, --remove REMOVE                            Remove reviewer from the change
 ```
@@ -111,6 +113,7 @@ options:
   --range CHANGE1 CHANGE2                               Specify a range of changes
   -q QUERY, --query QUERY                               Specify a Gerrit query (Initialize with "-" to exclude changes eg. -topic:foo -420)
   -t TOPIC, --topic TOPIC                               Set topic
+  --timeout TIMEOUT                                     Specify the time interval (in seconds) between SSH commands (default: 0)
 ```
 
 ## License
