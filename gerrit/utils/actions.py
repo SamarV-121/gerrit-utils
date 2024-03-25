@@ -94,7 +94,7 @@ def review(ssh, args):
         review_query.append("--submit")
 
     if args.message:
-        review_query.append(f"--message {args.message}")
+        review_query.append(f'--message "{args.message}"')
 
     if args.code_review:
         review_query.append(f"--code-review {args.code_review}")
