@@ -72,6 +72,9 @@ def push(args):
     if args.thin:
         command.append("--no-thin")
 
+    if args.force:
+        command.append("-f")
+
     if ref == "heads":
         command.append("-o skip-validation")
 

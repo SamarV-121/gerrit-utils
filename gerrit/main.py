@@ -135,6 +135,12 @@ def parse_args():
         action="store_true",
         help="Disable thin optimizations while pushing",
     )
+    push_parser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="Force push",
+    )
     push_parser.add_argument("--reviewer", help="Assign a reviewer")
     push_parser.add_argument("--cc", help="CC additional recipients")
     private_group = push_parser.add_mutually_exclusive_group()

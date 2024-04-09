@@ -45,6 +45,7 @@ options:
   -v {-1,0,+1}, --verified {-1,0,+1}                  Verify the change
   -m MERGE_COMMIT, --merge MERGE_COMMIT               Push a merge on Gerrit
   -n, --no-thin                                       Disable thin optimizations while pushing
+  -f, --force                                         Force push
   --reviewer REVIEWER                                 Assign a reviewer
   --cc CC                                             CC additional recipients
   --private                                           Set the change visibility to private
