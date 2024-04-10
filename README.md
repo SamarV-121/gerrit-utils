@@ -44,6 +44,7 @@ options:
   -cr {+2,0,+1,-1,-2}, --code-review {+2,0,+1,-1,-2}  Code review
   -v {-1,0,+1}, --verified {-1,0,+1}                  Verify the change
   -m MERGE_COMMIT, --merge MERGE_COMMIT               Push a merge on Gerrit
+  -M BASE_COMMIT, --multiple-merge BASE_COMMIT        Push a multiple merges on Gerrit
   -n, --no-thin                                       Disable thin optimizations while pushing
   -f, --force                                         Force push
   --reviewer REVIEWER                                 Assign a reviewer

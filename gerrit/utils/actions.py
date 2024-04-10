@@ -30,6 +30,7 @@ def push(args):
     branch = args.branch or repo.active_branch.name
     ref = args.ref or "for"
     commit = args.commit or "HEAD"
+    commit = repo.git.rev_parse(commit)
 
     def add_refspec(spec):
         sep = "%" if len(refspec) == 0 else ","
@@ -65,7 +66,7 @@ def push(args):
     if args.merge:
         commit_info = repo.git.show(args.merge, "--pretty=%P").split()
         base_args = f"base={commit_info[0]},base={commit_info[1]}"
-        add_refspec("".join(base_args))
+        add_refspec(base_args)
 
     command = [remote, f'{commit}:refs/{ref}/{branch}{"".join(refspec)}']
 
@@ -77,6 +78,40 @@ def push(args):
 
     if ref == "heads":
         command.append("-o skip-validation")
+
+    last_merge_commit = None
+    if args.multiple_merge:
+        base_commit = args.multiple_merge
+        merge_commits = repo.git.log(
+            "--reverse",
+            "--merges",
+            "--first-parent",
+            "--format=%H",
+            f"{base_commit}..{commit}",
+        ).split("\n")
+
+        last_merge_commit = repo.git.rev_parse(merge_commits[-1])
+
+        refspec_copy = refspec.copy()
+        command_copy = command.copy()
+        for merge_commit in merge_commits:
+            commit_info = repo.git.show(merge_commit, "--pretty=%P").split()
+            base_args = f"base={commit_info[0]},base={commit_info[1]}"
+            refspec = refspec_copy.copy()
+            add_refspec(base_args)
+
+            current_command = command_copy
+            current_command[1] = f'{merge_commit}:refs/{ref}/{branch}{"".join(refspec)}'
+
+            if not args.quiet:
+                print(f"Running git push {current_command}")
+
+            repo.git.push(current_command)
+
+        print("Pushed all merge commits\n")
+
+    if last_merge_commit == commit:
+        return
 
     if not args.quiet:
         print(f"Running git push {command}")

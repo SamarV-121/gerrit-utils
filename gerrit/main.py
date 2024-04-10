@@ -129,6 +129,12 @@ def parse_args():
         "-m", "--merge", help="Push a merge on Gerrit", metavar="MERGE_COMMIT"
     )
     push_parser.add_argument(
+        "-M",
+        "--multiple-merge",
+        metavar="BASE_COMMIT",
+        help="Push a multiple merges on Gerrit",
+    )
+    push_parser.add_argument(
         "-n",
         "--no-thin",
         dest="thin",
