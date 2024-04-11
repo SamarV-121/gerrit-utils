@@ -79,9 +79,17 @@ def push(args):
     if ref == "heads":
         command.append("-o skip-validation")
 
-    last_merge_commit = None
+    last_commit = None
+
     if args.multiple_merge:
         base_commit = args.multiple_merge
+        commits = repo.git.log(
+            "--reverse",
+            "--first-parent",
+            "--format=%H",
+            f"{base_commit}..{commit}",
+        ).split("\n")
+
         merge_commits = repo.git.log(
             "--reverse",
             "--merges",
@@ -90,27 +98,43 @@ def push(args):
             f"{base_commit}..{commit}",
         ).split("\n")
 
-        last_merge_commit = repo.git.rev_parse(merge_commits[-1])
+        last_commit = repo.git.rev_parse(commits[-1])
+        normal_commits = []
 
         refspec_copy = refspec.copy()
         command_copy = command.copy()
-        for merge_commit in merge_commits:
-            commit_info = repo.git.show(merge_commit, "--pretty=%P").split()
-            base_args = f"base={commit_info[0]},base={commit_info[1]}"
-            refspec = refspec_copy.copy()
-            add_refspec(base_args)
-
+        for commit in commits:
             current_command = command_copy
-            current_command[1] = f'{merge_commit}:refs/{ref}/{branch}{"".join(refspec)}'
+            if commit in merge_commits:
+                # Push normal commits before merges
+                if normal_commits:
+                    latest_normal_commit = normal_commits[-1]
+                    current_command[1] = f"{latest_normal_commit}:refs/{ref}/{branch}"
 
-            if not args.quiet:
-                print(f"Running git push {current_command}")
+                    if not args.quiet:
+                        print(f"Running git push {current_command}")
 
-            repo.git.push(current_command)
+                    repo.git.push(current_command)
+                    normal_commits = []
 
-        print("Pushed all merge commits\n")
+                # Push merges
+                if not args.quiet:
+                    print("Merge commit detected")
+                commit_info = repo.git.show(commit, "--pretty=%P").split()
+                base_args = f"base={commit_info[0]},base={commit_info[1]}"
+                refspec = refspec_copy.copy()
+                add_refspec(base_args)
 
-    if last_merge_commit == commit:
+                current_command[1] = f'{commit}:refs/{ref}/{branch}{"".join(refspec)}'
+
+                if not args.quiet:
+                    print(f"Running git push {current_command}")
+
+                repo.git.push(current_command)
+            else:
+                normal_commits.append(commit)
+
+    if last_commit == commit:
         return
 
     if not args.quiet:
