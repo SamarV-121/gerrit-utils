@@ -4,33 +4,57 @@
 # SPDX-License-Identifier: MIT
 #
 import json
-import requests
-
-TIMEOUT = 10
 
 
-def get_change_info(gerrit_url, change_num):
-    ret = requests.get(
-        f"https://{gerrit_url}/changes/{change_num}?o=CURRENT_REVISION",
-        timeout=TIMEOUT,
+def get_change_info(ssh, change_num):
+    command = (
+        f"gerrit query {change_num} --current-patch-set --dependencies --format=JSON --no-limit"
     )
-    return json.loads(ret.text.split("\n")[1])
+    _, stdout, _ = ssh.exec_command(command)
+
+    for change_json in stdout:
+        change = json.loads(change_json)
+        if str(change.get("number")) == str(change_num):
+            return change
+
+    raise ValueError(f"Unable to find change info for change {change_num}")
 
 
-def get_chained_changes(gerrit_url, change_num):
-    change_info = get_change_info(gerrit_url, change_num)
-    change_id = change_info["id"]
-    commit = change_info["current_revision"]
-    ret = requests.get(
-        f"https://{gerrit_url}/changes/{change_id}/revisions/{commit}/related",
-        timeout=TIMEOUT,
-    )
-    return json.loads(ret.text.split("\n")[1])["changes"]
+def get_chained_changes(ssh, change_num):
+    changes = []
+    current_change_num = str(change_num)
+    seen_changes = set()
+
+    while current_change_num and current_change_num not in seen_changes:
+        seen_changes.add(current_change_num)
+        change_info = get_change_info(ssh, current_change_num)
+        current_patchset = change_info.get("currentPatchSet")
+        if not current_patchset:
+            raise ValueError(
+                f"Unable to find current patchset for change {current_change_num}"
+            )
+
+        changes.append(
+            {
+                "_change_number": int(change_info["number"]),
+                "_current_revision_number": int(current_patchset["number"]),
+            }
+        )
+
+        depends_on = change_info.get("dependsOn") or []
+        next_change_num = None
+        for dependency in depends_on:
+            if dependency.get("number"):
+                next_change_num = str(dependency["number"])
+                break
+        current_change_num = next_change_num
+
+    return list(reversed(changes))
 
 
-def get_trimmed_changes(gerrit_url, change_num1, change_num2):
+def get_trimmed_changes(ssh, change_num1, change_num2):
     start_idx, end_idx = None, None
-    changes = get_chained_changes(gerrit_url, change_num1)
+    changes = get_chained_changes(ssh, change_num1)
 
     for i, change in enumerate(changes):
         if change["_change_number"] == change_num1:
@@ -44,22 +68,14 @@ def get_trimmed_changes(gerrit_url, change_num1, change_num2):
 
 
 def get_current_patchset(ssh, change_num):
-    command = f"gerrit query {change_num} --current-patch-set --format=JSON --no-limit"
-    _, stdout, _ = ssh.exec_command(command)
-
-    for change_json in stdout:
-        change = json.loads(change_json)
-        if (
-            str(change.get("number")) == str(change_num)
-            and change.get("currentPatchSet")
-        ):
-            return change["currentPatchSet"]["number"]
-
-    raise ValueError(f"Unable to find current patchset for change {change_num}")
+    change_info = get_change_info(ssh, change_num)
+    current_patchset = change_info.get("currentPatchSet")
+    if not current_patchset:
+        raise ValueError(f"Unable to find current patchset for change {change_num}")
+    return current_patchset["number"]
 
 
 def get_changes_list(ssh, args, action):
-    gerrit_url = args.gerrit
     if args.change:
         if action == "review":
             changes = []
@@ -75,11 +91,11 @@ def get_changes_list(ssh, args, action):
         if action == "review":
             return [
                 f'{change["_change_number"]},{change["_current_revision_number"]}'
-                for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
+                for change in get_trimmed_changes(ssh, change_num1, change_num2)
             ]
         return [
             change["_change_number"]
-            for change in get_trimmed_changes(gerrit_url, change_num1, change_num2)
+            for change in get_trimmed_changes(ssh, change_num1, change_num2)
         ]
     elif args.query or args.topic:
         changes = []
