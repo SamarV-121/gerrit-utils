@@ -7,12 +7,29 @@
 import argparse
 import os
 import sys
-import paramiko
+import warnings
 from gerrit.utils import actions
 
 GERRIT = os.environ.get("GERRIT_SERVER")
 USER = os.environ.get("GERRIT_USERNAME")
 PORT = "29418"
+
+
+def get_paramiko():
+    warnings.filterwarnings(
+        "ignore",
+        category=Warning,
+        message=r".*Python 3\.8 is no longer supported by the Python core team.*",
+    )
+    warnings.filterwarnings(
+        "ignore",
+        category=Warning,
+        message=r".*TripleDES has been moved to cryptography\.hazmat\.decrepit\.ciphers\.algorithms\.TripleDES.*",
+    )
+
+    import paramiko
+
+    return paramiko
 
 
 def ssh_connection_required(exclude):
@@ -21,6 +38,7 @@ def ssh_connection_required(exclude):
             if parsed_args.subcommand in exclude:
                 func(parsed_args, None)
             else:
+                paramiko = get_paramiko()
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(parsed_args.gerrit, parsed_args.port, parsed_args.user)
@@ -195,6 +213,12 @@ def parse_args():
         "--verified",
         choices={"-1", "0", "+1"},
         help="Verify the change",
+    )
+    review_parser.add_argument(
+        "--afp",
+        dest="approved_for_pre_check",
+        choices={"-1", "0", "+1"},
+        help='Set "Approved-For-PreCheck" label',
     )
 
     # Reviewers

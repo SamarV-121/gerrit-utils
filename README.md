@@ -7,7 +7,7 @@
 ## Installation
 
 ```bash
-pip3 install --upgrade git+https://github.com/SamarV-121/gerrit-utils
+python3 -s -m pip install --upgrade --force-reinstall --no-cache-dir git+https://github.com/SamarV-121/gerrit-utils
 ```
 
 ## Usage
@@ -59,7 +59,7 @@ options:
 
 ```bash
 usage: gerrit-utils review [-h] [-g GERRIT] [-p PORT] [-u USER] (-c CHANGE [CHANGE ...] | --range CHANGE1 CHANGE2 | -q QUERY | -t TOPIC) [-a | -r | -s] [-m MESSAGE]
-                      [-cr {0,+2,-2,-1,+1}] [-v {-1,0,+1}]
+                      [-cr {0,+2,-2,-1,+1}] [-v {-1,0,+1}] [--afp {-1,0,+1}]
 
 options:
   -h, --help                                            show this help message and exit
@@ -78,6 +78,7 @@ options:
   -m MESSAGE, --message MESSAGE                         Post a message on the change
   -cr {0,+2,-2,-1,+1}, --code-review {0,+2,-2,-1,+1}    Code review
   -v {-1,0,+1}, --verified {-1,0,+1}                    Verify the change
+  --afp {-1,0,+1}                                      Set "Approved-For-PreCheck" label
 ```
 
 ### Set reviewers

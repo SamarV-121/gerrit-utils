@@ -164,6 +164,11 @@ def review(ssh, args):
     if args.verified:
         review_query.append(f"--verified {args.verified}")
 
+    if args.approved_for_pre_check:
+        review_query.append(
+            f'--label "Approved-For-PreCheck={args.approved_for_pre_check}"'
+        )
+
     final_query = " ".join(review_query)
     ssh_exec(ssh, args, action="review", query=final_query)
 
