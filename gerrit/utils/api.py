@@ -43,6 +43,21 @@ def get_trimmed_changes(gerrit_url, change_num1, change_num2):
     return []
 
 
+def get_current_patchset(ssh, change_num):
+    command = f"gerrit query {change_num} --current-patch-set --format=JSON --no-limit"
+    _, stdout, _ = ssh.exec_command(command)
+
+    for change_json in stdout:
+        change = json.loads(change_json)
+        if (
+            str(change.get("number")) == str(change_num)
+            and change.get("currentPatchSet")
+        ):
+            return change["currentPatchSet"]["number"]
+
+    raise ValueError(f"Unable to find current patchset for change {change_num}")
+
+
 def get_changes_list(ssh, args, action):
     gerrit_url = args.gerrit
     if args.change:
@@ -50,11 +65,7 @@ def get_changes_list(ssh, args, action):
             changes = []
             # review needs a patchset number as well
             for change in args.change:
-                change_info = get_change_info(gerrit_url, change)
-
-                for _, rev_data in change_info["revisions"].items():
-                    current_patchset = rev_data["_number"]
-
+                current_patchset = get_current_patchset(ssh, change)
                 changes.append(f"{change},{current_patchset}")
 
             return changes
