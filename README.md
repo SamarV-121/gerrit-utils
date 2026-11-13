@@ -10,13 +10,22 @@
 python3 -s -m pip install --upgrade --force-reinstall --no-cache-dir git+https://github.com/SamarV-121/gerrit-utils
 ```
 
+## Configuration
+
+```bash
+gerrit-utils --init
+```
+
+Prompts for the Gerrit server, port and username and saves them to `$XDG_CONFIG_HOME/gerrit-utils/config.ini` (default `~/.config/gerrit-utils/config.ini`). Saved values are used as defaults for `-g`, `-p` and `-u`; the `GERRIT_SERVER` and `GERRIT_USERNAME` environment variables are used only when no config value is set. Command-line flags always take precedence.
+
 ## Usage
 
 ```bash
-usage: gerrit-utils [-h] {push,review,set-reviewers,topic} ...
+usage: gerrit-utils [-h] [--init] {push,review,set-reviewers,topic} ...
 
 options:
   -h, --help                         show this help message and exit
+  --init                             Configure the Gerrit server, port and user (saved to config file)
 
 abilities:
   {push,review,set-reviewers,topic}

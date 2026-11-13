@@ -5,14 +5,51 @@
 # SPDX-License-Identifier: MIT
 #
 import argparse
+import configparser
 import os
 import sys
 import warnings
 from gerrit.utils import actions
 
-GERRIT = os.environ.get("GERRIT_SERVER")
-USER = os.environ.get("GERRIT_USERNAME")
-PORT = "29418"
+CONFIG_FILE = os.path.join(
+    os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"),
+    "gerrit-utils",
+    "config.ini",
+)
+
+
+def load_config():
+    config = configparser.ConfigParser(interpolation=None)
+    config.read(CONFIG_FILE)
+    return dict(config["gerrit"]) if config.has_section("gerrit") else {}
+
+
+CONFIG = load_config()
+GERRIT = CONFIG.get("server") or os.environ.get("GERRIT_SERVER")
+USER = CONFIG.get("user") or os.environ.get("GERRIT_USERNAME")
+PORT = CONFIG.get("port") or "29418"
+
+
+def ask(label, default, is_valid):
+    while True:
+        prompt = f"{label} [{default}]: " if default else f"{label}: "
+        value = input(prompt).strip() or default or ""
+        if is_valid(value):
+            return value
+        print(f"Invalid {label.lower()}, please try again.")
+
+
+def init_config():
+    server = ask("Gerrit server", GERRIT, bool)
+    port = ask("Gerrit port", PORT, lambda v: v.isdigit() and 0 < int(v) < 65536)
+    user = ask("Gerrit username", USER, bool)
+
+    config = configparser.ConfigParser(interpolation=None)
+    config["gerrit"] = {"server": server, "port": port, "user": user}
+    os.makedirs(os.path.dirname(CONFIG_FILE), exist_ok=True)
+    with open(CONFIG_FILE, "w") as f:
+        config.write(f)
+    print(f"Saved configuration to {CONFIG_FILE}")
 
 
 def get_paramiko():
@@ -107,6 +144,11 @@ def add_common_args(parser, ops=None):
 
 def parse_args():
     parser = argparse.ArgumentParser(formatter_class=formatter)
+    parser.add_argument(
+        "--init",
+        action="store_true",
+        help="Configure the Gerrit server, port and user (saved to config file)",
+    )
     subparsers = parser.add_subparsers(title="abilities", dest="subcommand")
 
     # Push
@@ -255,4 +297,7 @@ def main(parsed_args, ssh):
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args, None)
+    if args.init:
+        init_config()
+    else:
+        main(args, None)
